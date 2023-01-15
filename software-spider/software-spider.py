@@ -1,6 +1,7 @@
 import requests
 import threading
 import logs
+import os
 from contextlib import closing
 from urllib.parse import urlparse
 from requests_html import HTMLSession
@@ -19,6 +20,9 @@ class SoftWareSpider(object):
         }
         self.params_list = []
         self.url_list = []
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+        self.download_path = os.path.join(self.base_dir, 'downloads')
 
     def get_download_url(self):
         pass
@@ -35,8 +39,8 @@ class SoftWareSpider(object):
 
     def download(self, url, filepath):
         # 检查文件件是否存在
-        code_info = self.parse_url(url)
-        file_name = code_info.get('filename')
+        software_info = self.parse_url(url)
+        file_name = software_info.get('filename')
         with closing(requests.get(url, stream=True)) as response:
             chunk_size = 40960  # 单次请求最大值
             content_size = int(response.headers['content-length'])  # 内容体总大小
@@ -47,17 +51,31 @@ class SoftWareSpider(object):
                     data_count = data_count + len(data)
                     now_jd = (data_count / content_size) * 100
                     print("\r 文件下载进度：%d%%(%d/%d) - %s"
-                             % (now_jd, data_count, content_size, f"{filepath}/{file_name}"))
+                          % (now_jd, data_count, content_size, f"{filepath}/{file_name}"), end=" ")
                     if now_jd == 100:
                         LOG.info("\r 文件下载完成：%d%%(%d/%d) - %s"
                                  % (now_jd, data_count, content_size, f"{filepath}/{file_name}"))
 
+    @staticmethod
+    def check_log_dir(path):
+        if not os.path.exists(path):
+            os.makedirs(path)
+
     def run(self):
         # 采用多线程 下载
         # url = self.url_list[0]
+        self.check_log_dir(self.download_path)
+        LOG.info(f"开始下载任务 {len(self.url_list)}")
         for url in self.url_list:
-            threading.Thread(target=self.download, args=(url, '.'))
-            self.threads.append(threading.Thread(target=self.download, args=(url, '.')))
+            # 检查软件是否已下载
+            software_info = self.parse_url(url)
+            if os.path.exists(os.path.join(self.download_path, software_info['filename'])):
+                LOG.info(f"软件 {software_info['filename']}已下载！")
+                continue
+
+            LOG.info(f"开始下载软件 f{url}")
+            threading.Thread(target=self.download, args=(url, self.download_path))
+            self.threads.append(threading.Thread(target=self.download, args=(url, self.download_path)))
 
         for t in self.threads:
             t.start()
