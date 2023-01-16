@@ -51,4 +51,9 @@ software:
       - '//*[@id="main"]/p[2]/strong/a'
       - '//*[@id="main"]/p[3]/strong/a'
 
-
+  github-desktop:
+    base_url: https://central.github.com/deployments/desktop/desktop/latest/
+    download_url:
+      - darwin
+      - darwin-arm64
+      - win32

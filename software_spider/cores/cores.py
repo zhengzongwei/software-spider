@@ -60,11 +60,12 @@ class SoftwareSpider(object):
             file_path = os.path.join(self.base_dir, 'conf', 'software.yaml')
         with open(file_path, 'r') as f:
             self.soft_code_conf = yaml.safe_load(f).get('software')
+            LOG.info(f'配置 {self.soft_code_conf}')
 
     def get_download_url(self) -> None:
-        param_list = None
         for software_name in self.soft_code_conf:
             base_url = self.soft_code_conf[software_name]['base_url']
+
             if 'os' in self.soft_code_conf[software_name]:
                 param_list = self.soft_code_conf[software_name]['os']
 
@@ -72,14 +73,21 @@ class SoftwareSpider(object):
                     r = requests.get(base_url, params=param, headers=self.headers, allow_redirects=False)
                     if r.status_code == 302:
                         self.url_list.append(r.headers['location'])
-            else:
-                # git download
+
+            if 'xpath' in self.soft_code_conf[software_name]:
                 r = requests.get(base_url, headers=self.headers, allow_redirects=False)
-                if r.status_code == 200 and software_name == 'git':
+                if r.status_code == 200:
                     session = HTMLSession()
                     r = session.get(base_url)
                     for xpath in self.soft_code_conf[software_name]['xpath']:
                         self.url_list.append(r.html.xpath(xpath, first=True).attrs['href'])
+
+            if 'download_url' in self.soft_code_conf[software_name]:
+                for download_url in self.soft_code_conf[software_name]['download_url']:
+                    download_url = f'{base_url}/{download_url}'
+                    r = requests.get(download_url, headers=self.headers, allow_redirects=False)
+                    if r.status_code == 302:
+                        self.url_list.append(r.headers['location'])
 
     def download(self, url, filepath) -> None:
         software_info = self.parse_url(url)
@@ -126,7 +134,7 @@ class SoftwareSpider(object):
                 LOG.info(f"软件 {software_info['file_name']}已下载！")
                 continue
 
-            LOG.info(f"开始下载软件 f{url}")
+            LOG.info(f"开始下载软件 {url}")
             threading.Thread(target=self.download, args=(url, self.download_path))
             self.threads.append(threading.Thread(target=self.download, args=(url, self.download_path)))
 
