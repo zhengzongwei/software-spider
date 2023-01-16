@@ -1,4 +1,4 @@
-import software_spider.software_spider as software_spider
+from software_spider.core import software_spider as software_spider
 import requests
 
 import logs

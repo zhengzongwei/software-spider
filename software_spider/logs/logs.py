@@ -81,7 +81,7 @@ class LoggerBase(object):
             log_dir = cf.get("logs", "log_dir")
             self.log_dir = log_dir
         else:
-            self.log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+            self.log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '')
 
     def config_log(self):
         """
