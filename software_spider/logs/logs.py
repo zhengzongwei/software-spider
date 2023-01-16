@@ -4,7 +4,7 @@
 import logging
 import os
 from logging import handlers
-import configparser
+import yaml
 
 """
 ################################################################
@@ -20,13 +20,14 @@ class LoggerBase(object):
     """
 
     def __init__(self, logger_name) -> None:
-        # 是否控制台输出
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.log_dir = None
         self.logger = None
         self.LOG_LEVEL = None
         self.LOG_FORMAT = None
-        self.console_log_status = True
+        self.log_conf = {}
+        # 是否控制台输出
+        self.console_log_status = False
         self.stacklevel = 2
         self.logger_name = logger_name
 
@@ -65,24 +66,31 @@ class LoggerBase(object):
             case _:
                 self.LOG_LEVEL = logging.INFO
 
+    def get_config(self, file_path=None) -> None:
+        """
+        获取配置
+        """
+        if file_path is None:
+            file_path = os.path.join(self.base_dir, 'conf', 'log.yaml')
+        with open(file_path, 'r') as f:
+            self.log_conf = yaml.safe_load(f).get('log')
+
     def parse_config(self) -> None:
-        cf = configparser.RawConfigParser()
-        cf.read("./log.conf")
-        options = cf.options("logs")
-        if 'log_format' in options:
-            self.LOG_FORMAT = cf.get("logs", "log_format")
+        self.get_config()
+        if 'log_format' in self.log_conf:
+            self.LOG_FORMAT = self.log_conf.get("log_format")
         if self.LOG_FORMAT is None:
             self.LOG_FORMAT = "%(asctime)s - %(name)s[func: %(funcName)s line:%(lineno)d] - %(levelname)s: %(message)s"
-        if 'log_level' in options:
-            log_level = cf.get("logs", "log_level")
+        if 'log_level' in self.log_conf:
+            log_level = self.log_conf.get("log_level")
             if log_level not in ['debug', 'info']:
-                self.console_log_status = False
+                self.console_log_status = True
             self.parse_log_level(log_level)
-        if 'log_dir' in options:
-            log_dir = cf.get("logs", "log_dir")
+        if 'log_dir' in self.log_conf:
+            log_dir = self.log_conf.get("log_dir")
             self.log_dir = log_dir
         else:
-            self.log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '')
+            self.log_dir = os.path.join(os.path.dirname(os.path.abspath(self.base_dir)), 'logs')
 
     def config_log(self) -> None:
         """
@@ -94,8 +102,6 @@ class LoggerBase(object):
         # check exists
         if not self.check_log_dir(self.log_dir):
             self.mkdir_log_dir(self.log_dir)
-
-        # self.init_log(log_path=self.log_dir, log_format=self.LOG_FORMAT)
 
         log_path = f'{self.log_dir}/{self.logger_name}_logs.log'
         self.init_log(log_path=log_path, log_format=self.LOG_FORMAT)
@@ -145,5 +151,10 @@ class LoggerBase(object):
         self.logger.critical(msg, stacklevel=self.stacklevel)
 
 
+class Logger(LoggerBase):
+    def __int__(self,logger_name):
+        super().__init__(logger_name)
+
+
 if __name__ == '__main__':
-    LoggerBase("ss")
+    Logger("test")
