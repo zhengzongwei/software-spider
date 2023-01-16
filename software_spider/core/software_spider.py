@@ -1,6 +1,6 @@
 import requests
 import threading
-import logs
+import software_spider.logs.logs as logs
 import os
 from contextlib import closing
 from urllib.parse import urlparse
@@ -10,7 +10,7 @@ LOG = logs.LoggerBase("software_spider")
 
 class SoftWareSpider(object):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.threads = []
         self.base_url = None
         self.headers = {
@@ -23,11 +23,11 @@ class SoftWareSpider(object):
 
         self.download_path = os.path.join(self.base_dir, 'downloads')
 
-    def get_download_url(self):
+    def get_download_url(self) -> None:
         pass
 
     @staticmethod
-    def parse_url(url: str):
+    def parse_url(url: str) -> dict:
         parse_url = urlparse(url)
         filename = parse_url.path.split("/")[-1]
         version = None
@@ -36,7 +36,7 @@ class SoftWareSpider(object):
             'version': version
         }
 
-    def download(self, url, filepath):
+    def download(self, url, filepath) -> None:
         # 检查文件件是否存在
         software_info = self.parse_url(url)
         file_name = software_info.get('filename')
@@ -56,11 +56,11 @@ class SoftWareSpider(object):
                                  % (now_jd, data_count, content_size, f"{filepath}/{file_name}"))
 
     @staticmethod
-    def check_log_dir(path):
+    def check_log_dir(path) -> None:
         if not os.path.exists(path):
             os.makedirs(path)
 
-    def run(self):
+    def run(self) -> None:
         # 采用多线程 下载
         # url = self.url_list[0]
         self.check_log_dir(self.download_path)

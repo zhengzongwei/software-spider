@@ -16,18 +16,19 @@ import configparser
 
 class LoggerBase(object):
     """
-    Log Baase class
+    Log Base class
     """
 
     def __init__(self, logger_name) -> None:
         # 是否控制台输出
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.log_dir = None
-        self.logger_name = logger_name
+        self.logger = None
         self.LOG_LEVEL = None
         self.LOG_FORMAT = None
         self.console_log_status = True
         self.stacklevel = 2
+        self.logger_name = logger_name
 
         self.config_log()
 
@@ -49,7 +50,7 @@ class LoggerBase(object):
             path = os.path.abspath(path)
         return os.makedirs(path)
 
-    def parse_log_level(self, log_level):
+    def parse_log_level(self, log_level) -> None:
         match log_level:
             case 'debug':
                 self.LOG_LEVEL = logging.DEBUG
@@ -64,7 +65,7 @@ class LoggerBase(object):
             case _:
                 self.LOG_LEVEL = logging.INFO
 
-    def parse_config(self):
+    def parse_config(self) -> None:
         cf = configparser.RawConfigParser()
         cf.read("./log.conf")
         options = cf.options("logs")
@@ -83,14 +84,14 @@ class LoggerBase(object):
         else:
             self.log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '')
 
-    def config_log(self):
+    def config_log(self) -> None:
         """
         配置日志
         :return:
         """
         self.parse_config()
 
-        # chekc exists
+        # check exists
         if not self.check_log_dir(self.log_dir):
             self.mkdir_log_dir(self.log_dir)
 
@@ -99,7 +100,7 @@ class LoggerBase(object):
         log_path = f'{self.log_dir}/{self.logger_name}_logs.log'
         self.init_log(log_path=log_path, log_format=self.LOG_FORMAT)
 
-    def init_log(self, log_path=None, log_format=None):
+    def init_log(self, log_path=None, log_format=None) -> None:
         """
         初始化日志
         :param
@@ -108,8 +109,8 @@ class LoggerBase(object):
         self.logger.setLevel(self.LOG_LEVEL)
         self.logger.propagate = True
 
-        if log_path is None:
-            log_path = os.path.join()
+        # if log_path is None:
+        #     log_path = os.path.join()
 
         if self.LOG_LEVEL in [logging.DEBUG, logging.INFO]:
             self.console_log_status = True
@@ -128,19 +129,19 @@ class LoggerBase(object):
         file_handle.setFormatter(format_str)
         self.logger.addHandler(file_handle)
 
-    def debug(self, msg):
+    def debug(self, msg) -> None:
         self.logger.debug(msg, stacklevel=self.stacklevel)
 
-    def info(self, msg):
+    def info(self, msg) -> None:
         self.logger.info(msg, stacklevel=self.stacklevel)
 
-    def warn(self, msg):
+    def warn(self, msg) -> None:
         self.logger.warning(msg, stacklevel=self.stacklevel)
 
-    def error(self, msg):
+    def error(self, msg) -> None:
         self.logger.error(msg, stacklevel=self.stacklevel)
 
-    def critical(self, msg):
+    def critical(self, msg) -> None:
         self.logger.critical(msg, stacklevel=self.stacklevel)
 
 
