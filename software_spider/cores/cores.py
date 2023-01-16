@@ -8,7 +8,7 @@ import requests
 import yaml
 from requests_html import HTMLSession
 
-import logs.logs as logs
+import software_spider.logs.logs as logs
 
 LOG = logs.Logger("software_spider")
 
