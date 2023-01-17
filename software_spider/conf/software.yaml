@@ -45,15 +45,22 @@ software:
         product: *product
         lang: *lang
 
-  git:
-    base_url: https://git-scm.com/download/win
-    xpath:
-      - '//*[@id="main"]/p[2]/strong/a'
-      - '//*[@id="main"]/p[3]/strong/a'
-
   github-desktop:
     base_url: https://central.github.com/deployments/desktop/desktop/latest/
     download_url:
       - darwin
       - darwin-arm64
       - win32
+
+  git:
+    base_url: https://git-scm.com/download/win
+    xpath:
+      - '//*[@id="main"]/p[2]/strong/a'
+      - '//*[@id="main"]/p[3]/strong/a'
+
+  obs:
+    base_url: https://obsproject.com
+    xpath:
+      - '//*[@id="home_downloads"]/a[1]'
+      - '//*[@id="mac_extra"]/a[2]'
+      - '//*[@id="mac_extra"]/a[3]'
