@@ -4,7 +4,7 @@
 import logging
 import os
 from logging import handlers
-import yaml
+import toml
 
 """
 ################################################################
@@ -71,9 +71,10 @@ class LoggerBase(object):
         获取配置
         """
         if file_path is None:
-            file_path = os.path.join(self.base_dir, 'conf', 'log.yaml')
+            file_path = os.path.join(self.base_dir, 'conf', 'log.toml')
         with open(file_path, 'r') as f:
-            self.log_conf = yaml.safe_load(f).get('log')
+            # self.log_conf = yaml.safe_load(f).get('log')
+            self.log_conf = toml.load(f).get('log')
 
     def parse_config(self) -> None:
         self.get_config()

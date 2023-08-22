@@ -1,4 +1,0 @@
-log:
-  log_level: info
-  log_format: "%(asctime)s - %(name)s[func: %(funcName)s line:%(lineno)d] - %(levelname)s: %(message)s"
-#  log_dir:
