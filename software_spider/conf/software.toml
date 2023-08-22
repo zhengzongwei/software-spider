@@ -54,5 +54,28 @@ download_url = [
     "mac/main/amd64/Docker.dmg",
     "mac/main/arm64/Docker.dmg",
     "win/main/amd64/Docker%20Desktop%20Installer.exe"
-
 ]
+
+[python]
+base_url = "https://www.python.org/ftp/python/{python_version}"
+# https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tar.xz
+# https://www.python.org/ftp/python/2.7.18/python-2.7.18.msi
+version = [
+    '2.7.18',
+    '3.11.4'
+]
+download_url = [
+    'Python-{version}.tar.xz',
+    'python-{version}.msi',
+]
+
+[golang]
+base_url = "https://golang.google.cn/dl"
+version = [ "1.21.0"]
+download_url = [
+    "go{version}.darwin-amd64.pkg",
+    "go{version}.darwin-arm64.pkg",
+    "go{version}.windows-arm.msi",
+    "go{version}.windows-amd64.msi"
+]
+

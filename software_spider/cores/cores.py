@@ -39,10 +39,18 @@ class SoftwareSpider(object):
     @staticmethod
     def parse_version(file_name: str = None) -> str:
         version = None
-        version_reg = r'\d+\.(?:\d+\.)*\d+'
-        result = re.search(file_name, version_reg)
-        if result:
-            version = result.group()
+        version_reg_list = [
+            r"[\w.-]+-(\d+(\.\d+)*)(\.[a-zA-Z]+)*(\.[a-zA-Z]+)*",  # python
+            r"\w.(\d+\.\d+\.\d+)"  # golang
+        ]
+        for version_reg in version_reg_list:
+            print(version_reg)
+            result = re.match(version_reg, file_name)
+            if not result:
+                continue
+            version = result.group(1)
+
+
         return version
 
     def parse_url(self, url: str) -> dict:
@@ -90,12 +98,22 @@ class SoftwareSpider(object):
 
             if 'download_url' in self.soft_code_conf[software_name]:
                 for download_url in self.soft_code_conf[software_name]['download_url']:
-                    download_url = f'{base_url}/{download_url}'
-                    if software_name not in ['postman','docker']:
-                        r = requests.get(download_url, headers=self.headers, allow_redirects=False, timeout=3)
-                        if r.status_code == 302:
-                            url_info['urls'].append(r.headers['location'])
-                    url_info['urls'].append(download_url)
+                    if self.debug:
+                        LOG.info(f"download_url {download_url}")
+                    if software_name in ['python', 'golang']:
+                        for version in self.soft_code_conf[software_name]['version']:
+                            url_info['urls'].append(f'{base_url}/{download_url}'.format(version=version))
+
+                    else:
+                        download_url = f'{base_url}/{download_url}'
+                        if software_name not in ['postman', 'docker']:
+                            r = requests.get(download_url, headers=self.headers, allow_redirects=False, timeout=3)
+                            if r.status_code == 302:
+                                url_info['urls'].append(r.headers['location'])
+
+                        url_info['urls'].append(download_url)
+                    if self.debug:
+                        LOG.info(f"url_info['urls'] {url_info['urls']}")
             self.url_info_list.append(url_info)
 
     def download(self, url, download_path) -> None:
@@ -112,7 +130,7 @@ class SoftwareSpider(object):
                     now_jd = (data_count / content_size) * 100
 
                     print("\r 文件下载进度：%d%%(%d/%d) - %s"
-                          % (now_jd, data_count, content_size, f"{download_path}/{file_name}"),end=" ")
+                          % (now_jd, data_count, content_size, f"{download_path}/{file_name}"), end=" ")
                     if now_jd == 100:
                         LOG.info("\r 文件下载完成：%d%%(%d/%d) - %s"
                                  % (now_jd, data_count, content_size, f"{download_path}/{file_name}"))
@@ -145,6 +163,8 @@ class SoftwareSpider(object):
 
             for url in url_info['urls']:
                 software_info = self.parse_url(url)
+                if self.debug:
+                    LOG.info(f"software_info {software_info}")
                 if not software_info['version']:
                     software_info['version'] = 'latest'
 
